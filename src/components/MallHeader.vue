@@ -103,7 +103,7 @@ export default {
     props: {},
     data() {
         return {
-            loginModal: true
+            loginModal: false
         };
     },
     computed: {},
