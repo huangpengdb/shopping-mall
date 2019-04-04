@@ -27,39 +27,52 @@
                         src="../assets/static/logo.png"
                 /></a>
             </div>
-            <div class="navbar-right-container" style="display: flex;">
-                <div class="navbar-menu-container">
-                    <!--<a href="/" class="navbar-link">我的账户</a>-->
-                    <span class="navbar-link"></span>
-                    <a href="javascript:void(0)" class="navbar-link">Login</a>
-                    <a href="javascript:void(0)" class="navbar-link">Logout</a>
-                    <div class="navbar-cart-container">
-                        <span class="navbar-cart-count"></span>
-                        <a class="navbar-link navbar-cart-link" href="/#/cart">
-                            <svg class="navbar-cart-logo">
-                                <use
-                                    xmlns:xlink="http://www.w3.org/1999/xlink"
-                                    xlink:href="#icon-cart"
-                                ></use>
-                            </svg>
-                        </a>
-                    </div>
+            <div class="navbar-right-container">
+                <span class="navbar-link"></span>
+                <a
+                    href="javascript:void(0)"
+                    class="navbar-link"
+                    @click="showLoginMoal"
+                    v-if="noLogin"
+                    >Login</a
+                >
+                <span v-if="!noLogin">{{ user }}</span>
+                <a
+                    href="javascript:void(0)"
+                    class="navbar-link"
+                    @click="logOut"
+                    v-show="loginOut"
+                    >Logout</a
+                >
+                <div class="navbar-cart-container">
+                    <span class="navbar-cart-count"></span>
+                    <a class="navbar-link navbar-cart-link" href="/#/cart">
+                        <svg class="navbar-cart-logo">
+                            <use
+                                xmlns:xlink="http://www.w3.org/1999/xlink"
+                                xlink:href="#icon-cart"
+                            ></use>
+                        </svg>
+                    </a>
                 </div>
             </div>
         </div>
 
-        <div class="md-modal modal-msg md-modal-transition md-show">
+        <div
+            class="md-modal modal-msg md-modal-transition"
+            :class="{ 'md-show': mdShow }"
+        >
             <div class="md-modal-inner">
                 <div class="md-top">
                     <div class="md-title">Login in</div>
-                    <button class="md-close">
+                    <button class="md-close" @click="closeLoginModal">
                         Close
                     </button>
                 </div>
                 <div class="md-content">
                     <div class="confirm-tips">
                         <div class="error-wrap">
-                            <span class="error error-show"
+                            <span class="error error-show" v-show="errTip"
                                 >用户名或者密码错误</span
                             >
                         </div>
@@ -73,6 +86,7 @@
                                     class="regi_login_input regi_login_input_left"
                                     placeholder="User Name"
                                     data-type="loginname"
+                                    v-model="username"
                                 />
                             </li>
                             <li class="regi_form_input noMargin">
@@ -83,12 +97,16 @@
                                     name="password"
                                     class="regi_login_input regi_login_input_left login-input-no input_text"
                                     placeholder="Password"
+                                    v-model="password"
+                                    @keydown.enter="login"
                                 />
                             </li>
                         </ul>
                     </div>
                     <div class="login-wrap">
-                        <a href="javascript:;" class="btn-login">登 录</a>
+                        <a href="javascript:;" class="btn-login" @click="login"
+                            >登 录</a
+                        >
                     </div>
                 </div>
             </div>
@@ -98,19 +116,71 @@
 </template>
 
 <script>
-import '../assets/css/login.css'
+import "../assets/css/login.css";
+import { constants } from "crypto";
 export default {
     props: {},
     data() {
         return {
-            loginModal: false
+            loginModal: false,
+            mdShow: false,
+            username: "",
+            password: "",
+            errTip: false,
+            noLogin: true,
+            loginOut: false,
+            user: ""
         };
     },
     computed: {},
     created() {},
     mounted() {},
     watch: {},
-    methods: {},
+    methods: {
+        showLoginMoal() {
+            this.loginModal = true;
+            this.mdShow = true;
+        },
+        closeLoginModal() {
+            this.loginModal = false;
+            this.mdShow = false;
+        },
+        login() {
+            if (!this.username || !this.password) {
+                this.errTip = true;
+                return;
+            }
+            this.axios
+                .post("/users/login", {
+                    username: this.username,
+                    password: this.password
+                })
+                .then(result => {
+                    let res = result.data;
+                    if (res.status === "0") {
+                        this.errTip = false;
+                        this.closeLoginModal();
+                        this.noLogin = false;
+                        this.loginOut = true;
+                        this.user = res.result;
+                    } else {
+                        this.errTip = true;
+                    }
+                })
+                .catch(err => {});
+        },
+        logOut() {
+            this.axios
+                .post("/users/logout")
+                .then(result => {
+                    let res = result.data;
+                    if(res.status === "0"){
+                        this.loginOut = false;
+                        this.noLogin = true
+                    }
+                });
+        }
+    },
     components: {}
 };
 </script>
@@ -126,7 +196,13 @@ export default {
     -webkit-transform: scaleX(-1);
     transform: scaleX(-1);
 }
-.navbar-cart-container {
-    display: inline-block;
+
+.navbar-right-container,
+.navbar-left-container {
+    display: flex;
+    width: 18vw;
+    justify-content: space-between;
+    align-items: center;
+    margin-right: 18px;
 }
 </style>

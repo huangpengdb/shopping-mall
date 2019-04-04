@@ -92,12 +92,13 @@
                                             {{ product.productName }}
                                         </div>
                                         <div class="price">
-                                            {{ product.price }}
+                                            {{ product.salePrice }}
                                         </div>
                                         <div class="btn-area">
                                             <a
                                                 href="javascript:;"
-                                                class="btn btn--m"
+                                                class="btn btn-m"
+                                                @click="addCart(product)"
                                                 >加入购物车</a
                                             >
                                         </div>
@@ -231,6 +232,16 @@ export default {
                 this.page++;
                 this.sortByPrice(this.flag);
             }, 100);
+        },
+        addCart(product) {
+            this.axios.post('/goods/addCart', {
+                productId: product.productId
+            }).then((result)=>{
+                let res = result.data;
+                console.log(res.result)
+            }).catch((err)=>{
+                
+            })
         }
     },
     components: {
