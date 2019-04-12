@@ -6,20 +6,11 @@ Vue.use(VueRouter)
 const routes = [{
     path: '/',
     component: () => import('../views/GoodsList'),
-    // children: [
-    //     {
-    //         path: 'title',
-    //         component: () => import('../components/title'),
-    //     },
-    //     {
-    //         path: 'img',
-    //         component: () => import('../components/img'),
-    //     },
-    //     {
-    //         path: 'cart',
-    //         component: () => import('../views/cart'),
-    //     },
-    // ]
+    
+},{
+    path: '/cart',
+    component: () => import('../views/Cart'),
+    
 }]
 
 const router = new VueRouter({

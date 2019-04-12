@@ -46,7 +46,7 @@
                 >
                 <div class="navbar-cart-container">
                     <span class="navbar-cart-count"></span>
-                    <a class="navbar-link navbar-cart-link" href="/#/cart">
+                    <a class="navbar-link navbar-cart-link" href="/cart">
                         <svg class="navbar-cart-logo">
                             <use
                                 xmlns:xlink="http://www.w3.org/1999/xlink"
@@ -134,9 +134,21 @@ export default {
     },
     computed: {},
     created() {},
-    mounted() {},
+    mounted() {
+        this.checkLogin();
+    },
     watch: {},
     methods: {
+        checkLogin() {
+            this.axios.get("/users/checkLogin").then(result => {
+                let res = result.data;
+                if (res.status === "0") {
+                    this.noLogin = false;
+                    this.loginOut = true;
+                    this.user = res.result;
+                }
+            });
+        },
         showLoginMoal() {
             this.loginModal = true;
             this.mdShow = true;
@@ -170,15 +182,13 @@ export default {
                 .catch(err => {});
         },
         logOut() {
-            this.axios
-                .post("/users/logout")
-                .then(result => {
-                    let res = result.data;
-                    if(res.status === "0"){
-                        this.loginOut = false;
-                        this.noLogin = true
-                    }
-                });
+            this.axios.post("/users/logout").then(result => {
+                let res = result.data;
+                if (res.status === "0") {
+                    this.loginOut = false;
+                    this.noLogin = true;
+                }
+            });
         }
     },
     components: {}
