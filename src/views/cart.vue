@@ -129,6 +129,7 @@
                                         <a
                                             href="javascript:;"
                                             class="item-edit-btn"
+                                            @click="confirmDel(item.productId)"
                                         >
                                             <svg class="icon icon-del">
                                                 <use
@@ -168,6 +169,24 @@
                 </div>
             </div>
         </div>
+        <modal :mdShow="mdShow" v-on:close="closeModal">
+            <p slot="message">
+                <span>请确认是否删除商品</span>
+            </p>
+            <div slot="btnGroup">
+                <a
+                    href="javascript:;"
+                    class="btn btn--m"
+                    @click="delOrder"
+                    >确认</a
+                >
+                <a
+                    class="btn btn--m"
+                    href="javascript:;"
+                    @click="mdShow = false"
+                >取消</a>
+            </div>
+        </modal>
         <mall-footer></mall-footer>
     </div>
 </template>
@@ -176,6 +195,7 @@
 import MallHeader from "../components/MallHeader.vue";
 import MallFooter from "../components/MallFooter.vue";
 import BreadCrumb from "../components/BreadCrumb.vue";
+import Modal from "../components/Modal.vue";
 import "../assets/css/base.css";
 import "../assets/css/product.css";
 import "../assets/css/checkout.css";
@@ -184,7 +204,9 @@ export default {
     data() {
         return {
             position: "My Cart",
-            cartList: []
+            cartList: [],
+            mdShow: false,
+            selectedId: ''
         };
     },
     computed: {
@@ -212,13 +234,29 @@ export default {
                 
             });
 
+        },
+        confirmDel(productId) {
+            this.mdShow = true;
+            this.selectedId = productId;
+        },
+        closeModal() {
+            this.mdShow = false;            
+        },
+        delOrder() {
+            this.closeModal();
+            this.axios.post('/users/cart/delOrder', {
+                productId: this.productId
+            }).then((result) => {
+
+            })
         }
         
     },
     components: {
         MallHeader,
         MallFooter,
-        BreadCrumb
+        BreadCrumb,
+        Modal
     }
 };
 </script>

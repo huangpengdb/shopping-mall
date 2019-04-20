@@ -302,8 +302,7 @@ export default {
             this.showFilter = false;
             this.overlayFlag = false;
         },
-        sortByPrice(flag) {
-            // this.sortType = !this.sortType;
+        sortByPrice(flag) {            
             let sort = this.sortType ? 1 : -1;
             let page = this.page;
             let pageSize = this.pageSize;
