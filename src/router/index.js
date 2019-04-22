@@ -11,6 +11,10 @@ const routes = [{
     path: '/cart',
     component: () => import('../views/Cart'),
     
+},{
+    path: '/address',
+    component: () => import('../views/Address'),
+    
 }]
 
 const router = new VueRouter({

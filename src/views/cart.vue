@@ -78,14 +78,14 @@
                             </ul>
                         </div>
                         <ul class="cart-item-list">
-                            <li v-for="(item,index) in cartList" :key="index">
+                            <li v-for="(item, index) in cartList" :key="index">
                                 <div class="cart-tab-1">
                                     <div class="cart-item-check">
                                         <a
                                             href="javascipt:;"
                                             class="checkbox-btn item-check-btn"
                                             v-bind:class="{
-                                                check: item.checked == '1'
+                                                check: item.checked
                                             }"
                                             @click="editCart('checked', item)"
                                         >
@@ -100,11 +100,15 @@
                                         <img :src="imgUrl(item.productImg)" />
                                     </div>
                                     <div class="cart-item-title">
-                                        <div class="item-name">{{ item.productName }}</div>
+                                        <div class="item-name">
+                                            {{ item.productName }}
+                                        </div>
                                     </div>
                                 </div>
                                 <div class="cart-tab-2">
-                                    <div class="item-price">{{ item.salePrice }}</div>
+                                    <div class="item-price">
+                                        {{ item.salePrice }}
+                                    </div>
                                 </div>
                                 <div class="cart-tab-3">
                                     <div class="item-quantity">
@@ -112,17 +116,31 @@
                                             class="select-self select-self-open"
                                         >
                                             <div class="select-self-area">
-                                                <a class="input-sub">-</a>
-                                                <span class="select-ipt"
-                                                    >{{ item.productNum }}</span
+                                                <a
+                                                    class="input-sub"
+                                                    @click="
+                                                        editCart('minu', item)
+                                                    "
+                                                    >-</a
                                                 >
-                                                <a class="input-add">+</a>
+                                                <span class="select-ipt">{{
+                                                    item.productNum
+                                                }}</span>
+                                                <a
+                                                    class="input-add"
+                                                    @click="
+                                                        editCart('add', item)
+                                                    "
+                                                    >+</a
+                                                >
                                             </div>
                                         </div>
                                     </div>
                                 </div>
                                 <div class="cart-tab-4">
-                                    <div class="item-price-total">{{ item.productNum *item.salePrice }}</div>
+                                    <div class="item-price-total">
+                                        {{ (item.productNum * item.salePrice) | currency("$") }}
+                                    </div>
                                 </div>
                                 <div class="cart-tab-5">
                                     <div class="cart-item-opration">
@@ -147,8 +165,8 @@
                     <div class="cart-foot-inner">
                         <div class="cart-foot-l">
                             <div class="item-all-check">
-                                <a href="javascipt:;">
-                                    <span class="checkbox-btn item-check-btn">
+                                <a href="javascipt:;" @click="checkAllTogg">
+                                    <span class="checkbox-btn item-check-btn" :class="{'check': isCheckAll}">
                                         <svg class="icon icon-ok">
                                             <use xlink:href="#icon-ok" />
                                         </svg>
@@ -159,10 +177,10 @@
                         </div>
                         <div class="cart-foot-r">
                             <div class="item-total">
-                                Item total: <span class="total-price">500</span>
+                                Item total: <span class="total-price">{{totalPrice | currency("$")}}</span>
                             </div>
                             <div class="btn-wrap">
-                                <a class="btn btn--red">Checkout</a>
+                                <a class="btn btn--red" :class="{'btn--dis': checkedCount==0}" @click="checkout">Checkout</a>
                             </div>
                         </div>
                     </div>
@@ -174,17 +192,15 @@
                 <span>请确认是否删除商品</span>
             </p>
             <div slot="btnGroup">
-                <a
-                    href="javascript:;"
-                    class="btn btn--m"
-                    @click="delOrder"
+                <a href="javascript:;" class="btn btn--m" @click="delOrder"
                     >确认</a
                 >
                 <a
                     class="btn btn--m"
                     href="javascript:;"
                     @click="mdShow = false"
-                >取消</a>
+                    >取消</a
+                >
             </div>
         </modal>
         <mall-footer></mall-footer>
@@ -206,7 +222,7 @@ export default {
             position: "My Cart",
             cartList: [],
             mdShow: false,
-            selectedId: ''
+            selectedId: ""            
         };
     },
     computed: {
@@ -214,43 +230,109 @@ export default {
             return productImg => {
                 return require("../assets/static/" + productImg);
             };
+        },
+        checkedCount() {
+            let sum = 0
+            this.cartList.forEach((ele)=>{
+                if (ele.checked) {
+                    sum++                    
+                }
+            })
+            return sum
+        },
+        isCheckAll() {
+            let isc = false;
+            if (this.cartList.length === this.checkedCount) {
+                isc = true                
+            }
+            return isc
+        },
+        totalPrice() {
+            let sum = 0;
+            this.cartList.map((ele)=>{
+                if (ele.checked) {
+                    sum += parseFloat(ele.salePrice) * parseFloat(ele.productNum);                     
+                }
+            })
+            return sum
         }
-    },
+    },    
     created() {},
     mounted() {
-        this.getCartData()
+        this.getCartData();
     },
     watch: {},
     methods: {
         getCartData() {
-            this.axios.get('/users/cart').then((result) => {
-                let res = result.data;
-                if (res.status === "0") {
-                    this.cartList = res.cartList;  
-                                      
-                }
-                
-            }).catch((err) => {
-                
-            });
-
+            this.axios
+                .get("/users/cart")
+                .then(result => {
+                    let res = result.data;
+                    if (res.status === "0") {
+                        this.cartList = res.cartList;
+                    }
+                })
+                .catch(err => {});
         },
         confirmDel(productId) {
             this.mdShow = true;
             this.selectedId = productId;
         },
         closeModal() {
-            this.mdShow = false;            
+            this.mdShow = false;
         },
         delOrder() {
             this.closeModal();
-            this.axios.post('/users/cart/delOrder', {
-                productId: this.productId
-            }).then((result) => {
-
+            this.axios
+                .post("/users/cart/delOrder", {
+                    productId: this.selectedId
+                })
+                .then(result => {
+                    let res = result.data;
+                    if (res.status === "0") {
+                        this.getCartData();
+                    }
+                });
+        },
+        editCart(type, item) {
+            if (type == "add") {
+                item.productNum++;
+            }
+            if (type == "minu") {
+                if (item.productNum <= 1) {
+                    return;
+                }
+                item.productNum--;
+            }
+            if (type == "checked") {
+                item.checked = !item.checked               
+            }
+            this.axios.post("/users/cartEdit", {
+                productId: item.productId,
+                productNum: item.productNum,
+                checked: item.checked
+            }).then((result)=>{
+                let res = result.data
+            });
+        },
+        checkAllTogg(){
+            let ckeckAllflag = !this.isCheckAll;
+            this.cartList.map((ele)=>{
+                ele.checked = ckeckAllflag;
             })
-        }
-        
+            this.axios.post('/users/isCheckAll', {
+                isCheckAll: ckeckAllflag
+            }).then((result) =>{
+                let res = result.data
+            }).catch((err)=>{})
+        },
+        checkout(){
+            if (this.checkedCount>0) {
+                this.$router.push({
+                    path: '/address'
+                })                
+            }
+        }        
     },
     components: {
         MallHeader,

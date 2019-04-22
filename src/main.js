@@ -4,6 +4,7 @@ import VueRouter from 'vue-router'
 import axios from 'axios'
 import VueLazyLoad from 'vue-lazyload'
 import infiniteScroll from 'vue-infinite-scroll'
+import {currency} from './util/currency'
 
 Vue.use(infiniteScroll)
 Vue.prototype.axios = axios
@@ -14,6 +15,7 @@ Vue.use(VueLazyLoad, {
     loading: require('./assets/static/loading-svg/loading-spin.svg'),
     attempt: 1
 })
+Vue.filter('currency', currency);
 
 import router from './router/index.js'
 
